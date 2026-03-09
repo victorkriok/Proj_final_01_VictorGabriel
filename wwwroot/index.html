@@ -1,0 +1,857 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SA Individual — Gestão de Produtos</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #080a0d;
+        --surface: #0e1117;
+        --surface2: #151b24;
+        --border: #1e2730;
+        --accent: #00d4ff;
+        --accent2: #0099bb;
+        --green: #00e676;
+        --red: #ff4444;
+        --yellow: #ffb300;
+        --text: #b8c4cc;
+        --bright: #e8edf2;
+        --dim: #4a5660;
+        --mono: "DM Mono", monospace;
+        --sans: "Syne", sans-serif;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--sans);
+        min-height: 100vh;
+      }
+
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: radial-gradient(
+          ellipse 80% 50% at 50% -20%,
+          rgba(0, 212, 255, 0.06) 0%,
+          transparent 60%
+        );
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* ── TOPBAR ── */
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background: rgba(8, 10, 13, 0.92);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border);
+        height: 60px;
+        display: flex;
+        align-items: center;
+        padding: 0 32px;
+        gap: 32px;
+      }
+
+      .logo {
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--bright);
+      }
+      .logo span {
+        color: var(--accent);
+      }
+
+      .topbar-search {
+        flex: 1;
+        max-width: 360px;
+        display: flex;
+        gap: 8px;
+      }
+
+      .topbar-search input {
+        flex: 1;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        color: var(--bright);
+        font-family: var(--mono);
+        font-size: 13px;
+        padding: 8px 14px;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      .topbar-search input:focus {
+        border-color: var(--accent);
+      }
+      .topbar-search input::placeholder {
+        color: var(--dim);
+      }
+
+      .topbar-right {
+        margin-left: auto;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+
+      /* ── BUTTONS ── */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 9px 20px;
+        font-family: var(--sans);
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        cursor: pointer;
+        border: none;
+        transition: all 0.18s;
+      }
+      .btn-accent {
+        background: var(--accent);
+        color: #000;
+      }
+      .btn-accent:hover {
+        background: #33ddff;
+      }
+      .btn-ghost {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--dim);
+      }
+      .btn-ghost:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .btn-danger {
+        background: transparent;
+        border: 1px solid var(--red);
+        color: var(--red);
+      }
+      .btn-danger:hover {
+        background: var(--red);
+        color: #fff;
+      }
+      .btn-success {
+        background: transparent;
+        border: 1px solid var(--green);
+        color: var(--green);
+      }
+      .btn-success:hover {
+        background: var(--green);
+        color: #000;
+      }
+      .btn-sm {
+        padding: 5px 12px;
+        font-size: 11px;
+      }
+
+      /* ── MAIN ── */
+      .main {
+        padding: 32px;
+        max-width: 1300px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
+      }
+
+      /* ── STATS ── */
+      .stats-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 32px;
+      }
+
+      .stat-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        padding: 20px 24px;
+        position: relative;
+        overflow: hidden;
+        transition: border-color 0.2s;
+      }
+      .stat-card:hover {
+        border-color: var(--accent);
+      }
+      .stat-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, var(--accent), transparent);
+      }
+      .stat-label {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--dim);
+        margin-bottom: 10px;
+      }
+      .stat-value {
+        font-size: 38px;
+        font-weight: 800;
+        color: var(--accent);
+        line-height: 1;
+      }
+      .stat-sub {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--dim);
+        margin-top: 6px;
+      }
+
+      /* ── SECTION HEADER ── */
+      .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+      .section-title {
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--bright);
+      }
+      .section-title small {
+        display: block;
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--dim);
+        font-weight: 400;
+        letter-spacing: 3px;
+        margin-bottom: 2px;
+      }
+
+      /* ── TABLE ── */
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        overflow: hidden;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+
+      thead tr {
+        border-bottom: 1px solid var(--border);
+      }
+      th {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--accent);
+        padding: 14px 20px;
+        text-align: left;
+        font-weight: 400;
+        white-space: nowrap;
+      }
+      td {
+        padding: 13px 20px;
+        border-bottom: 1px solid rgba(30, 39, 48, 0.6);
+        vertical-align: middle;
+      }
+      tr:last-child td {
+        border-bottom: none;
+      }
+      tr:hover td {
+        background: rgba(0, 212, 255, 0.03);
+      }
+
+      .td-nome {
+        font-weight: 600;
+        color: var(--bright);
+      }
+      .td-code {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--dim);
+      }
+      .td-num {
+        font-family: var(--mono);
+      }
+
+      /* ── BADGE ── */
+      .badge {
+        display: inline-block;
+        padding: 3px 10px;
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        border: 1px solid;
+      }
+      .badge-ok {
+        color: var(--green);
+        border-color: var(--green);
+        background: rgba(0, 230, 118, 0.07);
+      }
+      .badge-low {
+        color: var(--yellow);
+        border-color: var(--yellow);
+        background: rgba(255, 179, 0, 0.07);
+      }
+      .badge-out {
+        color: var(--red);
+        border-color: var(--red);
+        background: rgba(255, 68, 68, 0.07);
+      }
+
+      .td-actions {
+        display: flex;
+        gap: 6px;
+      }
+
+      /* ── ALERT ── */
+      .alert {
+        padding: 12px 16px;
+        font-family: var(--mono);
+        font-size: 12px;
+        margin-bottom: 20px;
+        border-left: 3px solid;
+        display: none;
+      }
+      .alert.show {
+        display: block;
+      }
+      .alert-ok {
+        border-color: var(--green);
+        color: var(--green);
+        background: rgba(0, 230, 118, 0.05);
+      }
+      .alert-err {
+        border-color: var(--red);
+        color: var(--red);
+        background: rgba(255, 68, 68, 0.05);
+      }
+
+      .empty {
+        text-align: center;
+        padding: 56px;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--dim);
+        letter-spacing: 2px;
+      }
+
+      /* ── MODAL ── */
+      .overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.75);
+        z-index: 200;
+        display: none;
+        align-items: center;
+        justify-content: center;
+      }
+      .overlay.open {
+        display: flex;
+      }
+
+      .modal {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-top: 2px solid var(--accent);
+        padding: 36px;
+        width: 500px;
+        max-width: 94vw;
+        max-height: 92vh;
+        overflow-y: auto;
+        animation: slideUp 0.2s ease;
+      }
+
+      @keyframes slideUp {
+        from {
+          transform: translateY(20px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      .modal-title {
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--bright);
+        margin-bottom: 28px;
+      }
+
+      /* ── FORM ── */
+      .field {
+        margin-bottom: 18px;
+      }
+      .field label {
+        display: block;
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--accent);
+        letter-spacing: 2px;
+        margin-bottom: 7px;
+      }
+      .field input {
+        width: 100%;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        color: var(--bright);
+        font-family: var(--mono);
+        font-size: 14px;
+        padding: 11px 14px;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      .field input:focus {
+        border-color: var(--accent);
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+
+      .modal-footer {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 28px;
+      }
+
+      .modal-alert {
+        margin-bottom: 16px;
+      }
+
+      /* ── SCROLLBAR ── */
+      ::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+      }
+      ::-webkit-scrollbar-track {
+        background: var(--bg);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--border);
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--accent);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="logo">SA<span>.</span>INDIVIDUAL</div>
+      <div class="topbar-search">
+        <input
+          type="text"
+          id="search-input"
+          placeholder="Buscar produto por nome..."
+          onkeydown="if (event.key === 'Enter') buscar();"
+        />
+        <button
+          class="btn btn-ghost"
+          onclick="buscar()"
+          style="padding: 8px 14px"
+        >
+          ↵
+        </button>
+        <button
+          class="btn btn-ghost"
+          onclick="limparBusca()"
+          style="padding: 8px 14px"
+          title="Limpar"
+        >
+          ✕
+        </button>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-accent" onclick="abrirModal()">
+          + Novo Produto
+        </button>
+      </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+      <!-- STATS -->
+      <div class="stats-row" id="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Total de Produtos</div>
+          <div class="stat-value" id="stat-produtos">—</div>
+          <div class="stat-sub">itens cadastrados</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total em Estoque</div>
+          <div class="stat-value" id="stat-itens">—</div>
+          <div class="stat-sub">unidades totais</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Valor do Estoque</div>
+          <div class="stat-value" id="stat-valor" style="font-size: 26px">
+            —
+          </div>
+          <div class="stat-sub">valor total em R$</div>
+        </div>
+      </div>
+
+      <!-- ALERT GLOBAL -->
+      <div id="global-alert" class="alert"></div>
+
+      <!-- TABELA -->
+      <div class="section-header">
+        <div class="section-title">
+          <small>INVENTÁRIO</small>
+          Produtos
+        </div>
+        <div
+          id="busca-info"
+          style="
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--dim);
+            display: none;
+          "
+        ></div>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Nome</th>
+                <th>Código</th>
+                <th>Quantidade</th>
+                <th>Mínimo</th>
+                <th>Preço Unit.</th>
+                <th>Valor Total</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tbody">
+              <tr>
+                <td colspan="9" class="empty">Carregando...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL CADASTRO / EDIÇÃO -->
+    <div class="overlay" id="modal-overlay">
+      <div class="modal">
+        <div class="modal-title" id="modal-title">Novo Produto</div>
+        <div id="modal-alert" class="alert modal-alert"></div>
+        <input type="hidden" id="edit-id" />
+        <div class="form-row">
+          <div class="field" style="grid-column: 1/-1">
+            <label>Nome do Produto</label>
+            <input type="text" id="f-nome" placeholder="Ex: Parafuso M6" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Código</label>
+            <input type="text" id="f-codigo" placeholder="Ex: PAR-M6" />
+          </div>
+          <div class="field">
+            <label>Preço Unitário (R$)</label>
+            <input type="number" id="f-preco" step="0.01" placeholder="0.00" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Quantidade</label>
+            <input type="number" id="f-qtd" placeholder="0" />
+          </div>
+          <div class="field">
+            <label>Estoque Mínimo</label>
+            <input type="number" id="f-minimo" placeholder="0" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" onclick="fecharModal()">
+            Cancelar
+          </button>
+          <button class="btn btn-accent" onclick="salvar()">Salvar</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const API = "http://localhost:5260/api/produtos"; // ajuste a porta se necessário
+
+      // ── INIT ──
+      carregarRelatorio();
+      carregarProdutos();
+
+      // ── RELATÓRIO ──
+      async function carregarRelatorio() {
+        try {
+          const res = await fetch(`${API}/relatorio`);
+          if (!res.ok) return;
+          const data = await res.json();
+          document.getElementById("stat-produtos").textContent =
+            data.totalProdutos ?? "—";
+          document.getElementById("stat-itens").textContent =
+            data.totalItens ?? "—";
+          document.getElementById("stat-valor").textContent =
+            data.valorTotalEstoque != null
+              ? "R$ " +
+                Number(data.valorTotalEstoque).toLocaleString("pt-BR", {
+                  minimumFractionDigits: 2,
+                })
+              : "—";
+        } catch {
+          /* silencioso */
+        }
+      }
+
+      // ── LISTAR ──
+      async function carregarProdutos(nome = "") {
+        try {
+          const url = nome ? `${API}?nome=${encodeURIComponent(nome)}` : API;
+          const res = await fetch(url);
+          if (!res.ok)
+            return showAlert(
+              "global-alert",
+              "Erro ao carregar produtos.",
+              true,
+            );
+          const data = await res.json();
+          renderTabela(data);
+
+          const info = document.getElementById("busca-info");
+          if (nome) {
+            info.style.display = "block";
+            info.textContent = `${data.length} resultado(s) para "${nome}"`;
+          } else {
+            info.style.display = "none";
+          }
+        } catch {
+          showAlert("global-alert", "Erro de conexão com o servidor.", true);
+        }
+      }
+
+      function renderTabela(lista) {
+        const tbody = document.getElementById("tbody");
+        if (!lista.length) {
+          tbody.innerHTML =
+            '<tr><td colspan="9" class="empty">Nenhum produto encontrado.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = lista
+          .map((p) => {
+            const valorTotal = (p.quantidade * p.preco).toLocaleString(
+              "pt-BR",
+              { minimumFractionDigits: 2 },
+            );
+            const badge =
+              p.quantidade === 0
+                ? '<span class="badge badge-out">Zerado</span>'
+                : p.quantidade <= p.estoqueMinimo
+                  ? '<span class="badge badge-low">Baixo</span>'
+                  : '<span class="badge badge-ok">OK</span>';
+
+            return `<tr>
+      <td class="td-num" style="color:var(--dim)">#${p.id}</td>
+      <td class="td-nome">${p.nome}</td>
+      <td class="td-code">${p.codigo}</td>
+      <td class="td-num">${p.quantidade}</td>
+      <td class="td-num" style="color:var(--dim)">${p.estoqueMinimo}</td>
+      <td class="td-num">R$ ${Number(p.preco).toFixed(2).replace(".", ",")}</td>
+      <td class="td-num" style="color:var(--accent)">R$ ${valorTotal}</td>
+      <td>${badge}</td>
+      <td>
+        <div class="td-actions">
+          <button class="btn btn-ghost btn-sm" onclick="abrirEdicao(${p.id})">Editar</button>
+          <button class="btn btn-danger btn-sm" onclick="deletar(${p.id}, '${p.nome.replace(/'/g, "\\'")}')">Excluir</button>
+        </div>
+      </td>
+    </tr>`;
+          })
+          .join("");
+      }
+
+      // ── BUSCA ──
+      function buscar() {
+        const nome = document.getElementById("search-input").value.trim();
+        carregarProdutos(nome);
+      }
+
+      function limparBusca() {
+        document.getElementById("search-input").value = "";
+        carregarProdutos();
+      }
+
+      // ── MODAL ──
+      function abrirModal() {
+        document.getElementById("modal-title").textContent = "Novo Produto";
+        document.getElementById("edit-id").value = "";
+        ["f-nome", "f-codigo", "f-preco", "f-qtd", "f-minimo"].forEach(
+          (id) => (document.getElementById(id).value = ""),
+        );
+        showAlert("modal-alert", "", false);
+        document.getElementById("modal-overlay").classList.add("open");
+      }
+
+      async function abrirEdicao(id) {
+        try {
+          const res = await fetch(`${API}/${id}`);
+          if (!res.ok)
+            return showAlert("global-alert", "Produto não encontrado.", true);
+          const p = await res.json();
+
+          document.getElementById("modal-title").textContent = "Editar Produto";
+          document.getElementById("edit-id").value = p.id;
+          document.getElementById("f-nome").value = p.nome;
+          document.getElementById("f-codigo").value = p.codigo;
+          document.getElementById("f-preco").value = p.preco;
+          document.getElementById("f-qtd").value = p.quantidade;
+          document.getElementById("f-minimo").value = p.estoqueMinimo;
+          showAlert("modal-alert", "", false);
+          document.getElementById("modal-overlay").classList.add("open");
+        } catch {
+          showAlert("global-alert", "Erro ao buscar produto.", true);
+        }
+      }
+
+      function fecharModal() {
+        document.getElementById("modal-overlay").classList.remove("open");
+      }
+
+      document
+        .getElementById("modal-overlay")
+        .addEventListener("click", (e) => {
+          if (e.target === e.currentTarget) fecharModal();
+        });
+
+      // ── SALVAR ──
+      async function salvar() {
+        const id = document.getElementById("edit-id").value;
+        const nome = document.getElementById("f-nome").value.trim();
+        const codigo = document.getElementById("f-codigo").value.trim();
+        const preco = parseFloat(document.getElementById("f-preco").value);
+        const qtd = parseInt(document.getElementById("f-qtd").value);
+        const minimo = parseInt(document.getElementById("f-minimo").value) || 0;
+
+        if (!nome) return showAlert("modal-alert", "Nome é obrigatório.", true);
+        if (!codigo)
+          return showAlert("modal-alert", "Código é obrigatório.", true);
+        if (!preco || preco <= 0)
+          return showAlert(
+            "modal-alert",
+            "Preço deve ser maior que zero.",
+            true,
+          );
+        if (isNaN(qtd) || qtd < 0)
+          return showAlert("modal-alert", "Quantidade inválida.", true);
+
+        const body = {
+          nome,
+          codigo,
+          preco,
+          quantidade: qtd,
+          estoqueMinimo: minimo,
+        };
+        const isEdit = !!id;
+        if (isEdit) body.id = parseInt(id);
+
+        try {
+          const res = await fetch(isEdit ? `${API}/${id}` : API, {
+            method: isEdit ? "PUT" : "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          });
+
+          if (res.status === 409) {
+            const d = await res.json();
+            return showAlert("modal-alert", d.erro, true);
+          }
+          if (!res.ok) {
+            const d = await res.json();
+            return showAlert("modal-alert", d.erro || "Erro ao salvar.", true);
+          }
+
+          fecharModal();
+          showAlert(
+            "global-alert",
+            isEdit
+              ? "Produto atualizado com sucesso!"
+              : "Produto cadastrado com sucesso!",
+            false,
+          );
+          carregarProdutos();
+          carregarRelatorio();
+        } catch {
+          showAlert("modal-alert", "Erro de conexão.", true);
+        }
+      }
+
+      // ── DELETAR ──
+      async function deletar(id, nome) {
+        if (!confirm(`Excluir "${nome}"?`)) return;
+        try {
+          const res = await fetch(`${API}/${id}`, { method: "DELETE" });
+          if (res.status === 204) {
+            showAlert("global-alert", `"${nome}" removido com sucesso.`, false);
+            carregarProdutos();
+            carregarRelatorio();
+          } else {
+            const d = await res.json();
+            showAlert("global-alert", d.erro || "Erro ao excluir.", true);
+          }
+        } catch {
+          showAlert("global-alert", "Erro de conexão.", true);
+        }
+      }
+
+      // ── UTILS ──
+      function showAlert(id, msg, isErr) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = msg;
+        el.className =
+          "alert " + (isErr ? "alert-err" : "alert-ok") + (msg ? " show" : "");
+        if (msg && !isErr) setTimeout(() => (el.className = "alert"), 3500);
+      }
+    </script>
+  </body>
+</html>
