@@ -4,39 +4,44 @@ using backend.Model;
 
 namespace backend.Controller
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class ProdutosController : ControllerBase
+    [ApiController] // Define que a classe é um controller de uma API REST
+    [Route("api/[controller]")] // Define a rota base api/produtos ([controller]) sem o nome da classe sem o "Controller"
+    public class ProdutosController : ControllerBase // Herda os atributos do Controller Base que dá acesso a Ok() , badrequest, etc
     {
-        private readonly AppDbContext _db;
+        private readonly AppDbContext _db; // Essa é uma string que representa meu AppDbContext para utilizar as funções da classe
 
+         // Construtor — o ASP.NET injeta automaticamente o AppDbContext via injeção de dependência
         public ProdutosController(AppDbContext db) => _db = db;
 
-
+        // Get/api/produtos
+        // Aqui ele busca pelo nome se o parâmetro for dado
         [HttpGet]
         public IActionResult GetAll([FromQuery] string? nome)
         {
             try
             {
                 var lista = string.IsNullOrEmpty(nome)
-                ? _db.ListarProdutos()
-                : _db.BuscarPorNome(nome);
-                return Ok(lista);
+                ? _db.ListarProdutos() // Se não for informado o nome vai listar todos
+                : _db.BuscarPorNome(nome); // Se o nome for informado vai ser filtrado pelo nome
+                return Ok(lista);    // Retorna 200 com a lista em JSON
 
             }
             catch (Exception ex)
             {
-                return ErroInterno(ex);
+                return ErroInterno(ex); // Retorna 500 se algo der errado com mensagem de possível erro do próprio MySQL como ("Erro de Conexão")
             }
         }
 
+        // GET api/produtos/relatorio
+        // Retorna os dados agregados da view vw_relatorio_estoque
         [HttpGet("relatorio")]
         public IActionResult GetRelatorio()
         {
             try { return Ok(_db.ObterRelatorio()); } // usa o try catch para pegar os relatórios com o SELECT
-            catch (Exception ex) { return ErroInterno(ex); }
+            catch (Exception ex) { return ErroInterno(ex); } // Catch para possível erro
         }
 
+        // Get para buscar por ID
         [HttpGet("{id:int}")]
         public IActionResult GetById(int id)
         {
@@ -44,12 +49,14 @@ namespace backend.Controller
             {
                 var produto = _db.ConsultarPorId(id);
                 return produto is null
-                    ? NotFound(new { erro = $"Produto {id} não encontrado." })
-                    : Ok(produto);
+                    ? NotFound(new { erro = $"Produto {id} não encontrado." }) // Caso produto não for encontrado ele cairá nessa 
+                    : Ok(produto); // Retorna o produto pelo nome se for dado no parâmetro
             }
             catch (Exception ex) { return ErroInterno(ex); }
         }
 
+
+        //Post de Cadastrar o produto
         [HttpPost]
         public IActionResult Post([FromBody] Produtos produto)
         {
@@ -63,6 +70,7 @@ namespace backend.Controller
             if (produto.Preco <= 0)
                 return BadRequest(new { erro = "Preço deve ser maior que zero." });
 
+            // Try para tratar possíveis erros e retornar o produto
             try
             {
                 produto.Id = _db.CriarProduto(produto);
@@ -76,6 +84,7 @@ namespace backend.Controller
             catch (Exception ex) { return ErroInterno(ex); }
         }
 
+        //Put de poder atualizar o algum produto
         [HttpPut("{id:int}")]
         public IActionResult Put(int id, [FromBody] Produtos produto)
         {
@@ -88,6 +97,7 @@ namespace backend.Controller
             if (produto.Preco <= 0)
                 return BadRequest(new { erro = "Preço deve ser maior que zero." });
 
+            // Try para tratar as excessões e conseguir atualizar o produto sem problemas
             try
             {
                 return _db.AtualizarProduto(produto)
@@ -102,10 +112,11 @@ namespace backend.Controller
             catch (Exception ex) { return ErroInterno(ex); }
         }
 
-
+        // Delete onde irá ser feito a remoção de algum produto e pelo ID
         [HttpDelete("{id:int}")]
         public IActionResult Delete(int id)
         {
+            // Try para verificar possíveis falhas
             try
             {
                 return _db.RemoverProduto(id)
