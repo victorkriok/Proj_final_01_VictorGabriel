@@ -20,6 +20,7 @@ namespace backend.Data
             return conn;
         }
 
+        // Método usado para converter uma linha de resultado do banco de dados em um objeto
         private Produtos MapReader(MySqlDataReader r) => new()
         {
             Id = r.GetInt32("id"),
@@ -48,7 +49,6 @@ namespace backend.Data
             return Convert.ToInt32(cmd.ExecuteScalar());
         }
 
-        // BUG CORRIGIDO: while (reader.Read()) em vez de while (!reader.Read())
         public List<Produtos> ListarProdutos()
         {
             const string sql = @"
@@ -148,12 +148,13 @@ namespace backend.Data
 
             return new RelatorioEstoque
             {
-                TotalProdutos = reader.IsDBNull(0) ? 0 : reader.GetInt32(0),
+                TotalProdutos = reader.IsDBNull(0) ? 0 : reader.GetInt32(0), // IsDBNull utilizado para ver se a coluna acessada é uma coluna vazia
                 TotalItens = reader.IsDBNull(1) ? 0 : reader.GetInt32(1),
                 ValorTotalEstoque = reader.IsDBNull(2) ? 0 : reader.GetDecimal(2)
             };
         }
 
+        // Classe de representação do Relatório
         public class RelatorioEstoque
         {
             public int TotalProdutos { get; set; }
